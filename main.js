@@ -10,7 +10,7 @@
     const maxInlineColors = 3;
     const colors = { red: '#ff0000' };
 
-    const maxObjects = 100000;
+    const maxObjects = 100;
 
     class Texture {
         constructor(source) {
@@ -73,31 +73,26 @@
             this.topLeft = null;
             this.top = null;
             this.topRight = null;
-            this.right = null;
             this.bottomRight = null;
             this.bottom = null;
             this.bottomLeft = null;
-            this.left = null;
         }
 
-        getRelativePosition(key) {
+        getRelativePosition(key, radius) {
+            const h = Math.sqrt(Math.pow(radius,2)-Math.pow(radius/2,2));
             switch(key) {
                 case 'topLeft':
-                    return new Point(-20, -15);
+                    return new Point(-1.5*radius, -h);
                 case 'top':
-                    return new Point(0, -20);
+                    return new Point(0, -2*h);
                 case 'topRight':
-                    return new Point(20, -15);
-                case 'right':
-                    return new Point(20, 0);
+                    return new Point(1.5*radius, -h);
                 case 'bottomRight':
-                    return new Point(20, 15);
+                    return new Point(1.5*radius, h);
                 case 'bottom':
-                    return new Point(0, 20);
+                    return new Point(0, 2*h);
                 case 'bottomLeft':
-                    return new Point(-20, 15);
-                case 'left':
-                    return new Point(-20, 0);
+                    return new Point(-1.5*radius, h);
                 default:
                     new Error(`Unknown position: ${key}`);
             }
@@ -111,16 +106,12 @@
                     return 'bottom';
                 case 'topRight':
                     return 'bottomLeft';
-                case 'right':
-                    return 'left';
                 case 'bottomRight':
                     return 'topLeft';
                 case 'bottom':
                     return 'top';
                 case 'bottomLeft':
                     return 'topRight';
-                case 'left':
-                    return 'right';
                 default:
                     new Error(`Unknown position: ${key}`);
             }
@@ -189,7 +180,7 @@
                     return;
                 }
 
-                const relativePosition = this.neighbours.getRelativePosition(key);
+                const relativePosition = this.neighbours.getRelativePosition(key, this.radius);
                 const position = new Point(this.x + relativePosition.x, this.y + relativePosition.y);
                 if (!border.contains(position)) {
                     this.neighbours[key] = -1;
@@ -226,8 +217,6 @@
 
                 const oppositeKey = this.neighbours.getOppositeKey(key);
                 hexagon.neighbours[oppositeKey] = this;
-
-
 
                 hexagon.spawn(objects, border, textures);
             });
@@ -313,12 +302,12 @@
             animate();
         });
 
-        const rect = new Rect(0, 0, 250, 150);
+        const rect = new Rect(0, 0, 250, 100);
         fill(rect, loadedTextures);
     }
 
     function fill(rect, textures) {
-        const root = new Hexagon(rect.x, rect.y, hexagonRadius);
+        const root = new Hexagon(rect.x + hexagonRadius, rect.y + hexagonRadius, hexagonRadius);
         const colorIndex = getRandomInt(0, textures.length);
         const colorGroup = new ColorGroup(colorIndex);
         root.setTexture(colorGroup, textures);

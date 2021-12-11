@@ -10,7 +10,7 @@
     const maxInlineColors = 3;
     const colors = { red: '#ff0000' };
 
-    const maxObjects = 100;
+    const maxObjects = 500;
 
     class Texture {
         constructor(source) {
@@ -29,35 +29,6 @@
                     resolve(this.pattern);
                 }
             });
-        }
-    }
-
-    class Circle {
-        constructor(x, y, radius, color) {
-          this.x = x
-          this.y = y
-          this.radius = radius
-          this.color = color
-        }
-
-        draw() {
-          c.beginPath()
-          c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
-          c.fillStyle = this.color
-          c.fill()
-          c.closePath()
-        }
-
-        update() {
-          this.draw()
-        }
-
-        contains(x, y) {
-            return Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2) < Math.pow(this.radius, 2);
-        }
-
-        spawn() {
-            // do nothing
         }
     }
 
@@ -146,27 +117,54 @@
 
             c.fillStyle = this.texture || colors.red;
             c.fill();
-            //c.fillRect(this.x-this.radius, this.y-this.height, this.x+this.radius, this.y+this.height);
         }
 
         update() {
             this.draw()
         }
 
-        contains(x, y) {
-              return Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2) < Math.pow(this.radius, 2);
+        contains(point) {
+            const p1 = new Point(this.x-this.halfRadius, this.y-this.height);
+            const p2 = new Point(this.x+this.halfRadius, this.y+this.height);
+            if (point.x >= p1.x && point.x <= p2.x && point.y > p1.y && point.y < p2.y) {
+                return true;
+            }
+
+            // TODO:
+            return false;
         }
 
         setTexture(colorGroup, textures) {
-            if (colorGroup) {
-                this.colorGroup = colorGroup;
-            } else {
-                const newIndex = getRandomInt(0, textures.length);
-                this.colorGroup = new ColorGroup(newIndex);
+            if (!colorGroup || !textures) {
+                throw new Error('Unknown color group');
             }
 
+            this.colorGroup = colorGroup;
             this.texture = textures[this.colorGroup.colorIndex];
             this.colorGroup.members.push(this);
+        }
+
+        findAllNeighbours(objects, border) {
+            Object.keys(this.neighbours).forEach(key => {
+                if (this.neighbours[key] || this.neighbours[key] === -1) {
+                    return;
+                }
+
+                const relativePosition = this.neighbours.getRelativePosition(key, this.radius);
+                const position = new Point(this.x + relativePosition.x, this.y + relativePosition.y);
+                if (!border.contains(position)) {
+                    this.neighbours[key] = -1;
+                    return;
+                }
+
+                const exists = objects.filter(item => item.contains(position));
+                const found = exists.length > 0 ? exists[0] : null;
+                if (!found) {
+                    return;
+                }
+
+                this.neighbours[key] = found;
+            });
         }
 
         spawn(objects, border, textures) {
@@ -197,7 +195,14 @@
                 }
 
                 const hexagon = new Hexagon(position.x, position.y, this.radius);
-                const newColor = getRandomInt(0, textures.length);
+                this.neighbours[key] = hexagon;
+                const oppositeKey = this.neighbours.getOppositeKey(key);
+                hexagon.neighbours[oppositeKey] = this;
+
+                // find all neighbours before color
+                hexagon.findAllNeighbours(objects, border);
+
+                const newColor = getRandomInt(0, textures.length-1);
                 if (newColor == this.colorGroup.colorIndex && this.colorGroup.members.length < maxInlineColors) {
                     hexagon.setTexture(this.colorGroup, textures);
                 } else if (newColor !== this.colorGroup.colorIndex) {
@@ -210,13 +215,12 @@
                     }
                     const nextGroup = new ColorGroup(nextColor);
                     hexagon.setTexture(nextGroup, textures);
+                } else {
+                    hexagon.setTexture(new ColorGroup(-1), textures);
                 }
 
                 objects.push(hexagon);
-                this.neighbours[key] = hexagon;
-
-                const oppositeKey = this.neighbours.getOppositeKey(key);
-                hexagon.neighbours[oppositeKey] = this;
+                refresh();
 
                 hexagon.spawn(objects, border, textures);
             });
@@ -302,7 +306,7 @@
             animate();
         });
 
-        const rect = new Rect(0, 0, 250, 100);
+        const rect = new Rect(0, 0, 800, 600);
         fill(rect, loadedTextures);
     }
 
@@ -313,6 +317,7 @@
         root.setTexture(colorGroup, textures);
 
         objects.push(root);
+        refresh();
 
         root.spawn(objects, rect, textures);
     }
@@ -321,14 +326,14 @@
         c.clearRect(0, 0, canvas.width, canvas.height)
 
         //c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y)
-        objects.forEach(object => {
-            object.update()
+        objects.forEach(item => {
+            item.update()
         })
     }
 
     // Animation Loop
     function animate() {
-        requestAnimationFrame(animate)
+        //requestAnimationFrame(animate)
         refresh();
     }
   

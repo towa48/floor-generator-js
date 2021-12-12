@@ -21,7 +21,7 @@ const params = {
         new Point(0,0),
         new Point(800,0),
         new Point(800,600),
-        new Point(0, 600)
+        new Point(0,600)
     ],
 }
 
@@ -34,6 +34,7 @@ const patterns =  [
 
 // Implementation
 let objects = [];
+let border = null;
 
 function find(x, y) {
     return objects.filter(item => item.contains(x, y));
@@ -65,7 +66,7 @@ async function init() {
         animate();
     });
 
-    const border = new Border(c, params.border);
+    border = new Border(c, params.border);
     fill(border, loadedTextures);
 }
 
@@ -98,7 +99,7 @@ function markSameGroup() {
 }
 
 function drawBorder() {
-    // TODO
+    border.draw();
 }
 
 function refresh() {

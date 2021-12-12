@@ -1,3 +1,5 @@
+import { colors } from '../const.js';
+
 export class Border {
     constructor(ctx, path) {
         if (!path || path.length < 2) {
@@ -21,5 +23,16 @@ export class Border {
 
     contains(point) {
         return this._ctx.isPointInPath(this._path2d, point.x, point.y);
+    }
+
+    draw() {
+        const startPoint = this.path[0];
+        this._ctx.moveTo(startPoint.x, startPoint.y);
+        for(let i = 1; i < this.path.length; i++) {
+            this._ctx.lineTo(this.path[i].x, this.path[i].y);
+        }
+        this._ctx.closePath();
+        this._ctx.strokeStyle = colors.gray;
+        this._ctx.stroke();
     }
 }

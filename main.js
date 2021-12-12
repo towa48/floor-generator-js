@@ -211,12 +211,12 @@
                 let newColor = getRandomInt(0, textures.length-1);
                 let violate = true;
                 let i = 1;
-                while(violate && i < textures.length-1) {
+                while(violate && i < textures.length) {
                     violate = this.isColorViolate(hexagon, newColor);
 
                     if (violate) {
                         newColor = newColor + 1;
-                        if (newColor > textures.length) {
+                        if (newColor > textures.length-1) {
                             newColor = 0;
                         }
 
@@ -246,7 +246,9 @@
             const same = hexagon.neighbours.items.filter(item => {
                 return item.colorGroup.colorIndex == colorIndex;
             });
-            const sameOverall = same.reduce((prev, curr, index, result) => result.push(curr.members), []);
+            const sameOverall = same.reduce((prev, curr) => {
+                return prev.concat(curr.colorGroup.members);
+            }, []);
             return sameOverall.length >= maxInlineColors;
         }
     }
@@ -338,6 +340,21 @@
         root.spawn(objects, rect, textures);
     }
 
+    function markSameColor() {
+        objects.forEach(current => {
+            const sameGroup = current.neighbours.items.filter(item => {
+                return item.colorGroup === current.colorGroup;
+            });
+            sameGroup.forEach(item => {
+                c.beginPath();
+                c.moveTo(current.x, current.y);
+                c.lineTo(item.x, item.y);
+                c.strokeStyle = colors.red;
+                c.stroke();
+            })
+        });
+    }
+
     function refresh() {
         c.clearRect(0, 0, canvas.width, canvas.height)
 
@@ -355,5 +372,6 @@
   
   await init()
   refresh();
+  //markSameColor();
 
 })(window.innerWidth, window.innerHeight);

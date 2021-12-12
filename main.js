@@ -340,7 +340,7 @@
         root.spawn(objects, rect, textures);
     }
 
-    function markSameColor() {
+    function markSameGroup() {
         objects.forEach(current => {
             const sameGroup = current.neighbours.items.filter(item => {
                 return item.colorGroup === current.colorGroup;
@@ -369,9 +369,9 @@
         //requestAnimationFrame(animate)
         refresh();
     }
-  
+
   await init()
   refresh();
-  //markSameColor();
+  //markSameGroup();
 
 })(window.innerWidth, window.innerHeight);

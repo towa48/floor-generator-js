@@ -49,6 +49,12 @@
             this.bottomLeft = null;
         }
 
+        get items() {
+            return Object.keys(this).map(key => {
+                return this[key];
+            }).filter(item => item instanceof Hexagon);
+        }
+
         getRelativePosition(key, radius) {
             const h = Math.sqrt(Math.pow(radius,2)-Math.pow(radius/2,2));
             switch(key) {
@@ -202,20 +208,30 @@
                 // find all neighbours before color
                 hexagon.findAllNeighbours(objects, border);
 
-                const newColor = getRandomInt(0, textures.length-1);
-                if (newColor == this.colorGroup.colorIndex && this.colorGroup.members.length < maxInlineColors) {
-                    hexagon.setTexture(this.colorGroup, textures);
-                } else if (newColor !== this.colorGroup.colorIndex) {
-                    const newGroup = new ColorGroup(newColor);
-                    hexagon.setTexture(newGroup, textures);
-                } else if (this.colorGroup.members.length >= maxInlineColors) {
-                    let nextColor = newColor+1;
-                    if (nextColor >= textures.length) {
-                        nextColor = 0;
+                let newColor = getRandomInt(0, textures.length-1);
+                const same = hexagon.neighbours.items.filter(item => {
+                    return item.colorGroup.colorIndex == newColor;
+                });
+                const sameOverall = same.reduce((prev, curr, index, result) => result.push(curr.members), []);
+                const violate = sameOverall.length >= maxInlineColors;
+
+                if (violate) {
+                    newColor = newColor + 1;
+                    if (newColor > textures.length) {
+                        newColor = 0;
                     }
-                    const nextGroup = new ColorGroup(nextColor);
-                    hexagon.setTexture(nextGroup, textures);
-                } else {
+                }
+
+                // TODO: recursive check new color
+
+                const firstNeighbourWithColor = hexagon.neighbours.items.filter(item => item.colorGroup.colorIndex == newColor)[0];
+                const newColorGroup = !!firstNeighbourWithColor ? firstNeighbourWithColor.colorGroup : null;
+                if (newColorGroup && newColorGroup.members.length < maxInlineColors) {
+                    hexagon.setTexture(newColorGroup, textures);
+                } else if (!newColorGroup) {
+                    hexagon.setTexture(new ColorGroup(newColor), textures);
+                } else if (newColorGroup.members.length >= maxInlineColors) {
+                    // set red tile
                     hexagon.setTexture(new ColorGroup(-1), textures);
                 }
 
@@ -224,14 +240,6 @@
 
                 hexagon.spawn(objects, border, textures);
             });
-
-            //const exampleHexagon = new Hexagon(0, 0, hexagonRadius, 0, null);
-            //const stepx = hexagonRadius*3;
-            //const stepy = exampleHexagon.height;
-
-            //const deltax = (j % 2)*hexagonRadius*1.5;
-            //const centerX = hexagonRadius + i*stepx + deltax;
-            //const centerY = stepy + j*stepy;
         }
     }
 

@@ -2,9 +2,9 @@ import { Point } from './types/point.js';
 import { Texture } from './types/texture.js';
 import { ColorGroup } from './types/color-group.js';
 import { Hexagon } from './types/hexagon.js';
-import { Rect } from './types/rect.js';
 import { getRandomInt } from './utils.js';
 import { colors } from './const.js';
+import { Border } from './types/border.js';
 
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
@@ -17,12 +17,12 @@ const maxObjects = 1000;
 const params = {
     scale: 2,
     maxInlineColors: 3,
-    //border: [
-    //    new Point(0,0),
-    //    new Point(800,0),
-    //    new Point(800,600),
-    //    new Point(0, 600)
-    //],
+    border: [
+        new Point(0,0),
+        new Point(800,0),
+        new Point(800,600),
+        new Point(0, 600)
+    ],
 }
 
 const hexagonRadius = 10.5*params.scale;
@@ -65,12 +65,13 @@ async function init() {
         animate();
     });
 
-    const rect = new Rect(0, 0, 800, 600);
-    fill(rect, loadedTextures);
+    const border = new Border(c, params.border);
+    fill(border, loadedTextures);
 }
 
-function fill(rect, textures) {
-    const root = new Hexagon(rect.x + hexagonRadius, rect.y + hexagonRadius, hexagonRadius);
+function fill(border, textures) {
+    const startPoint = border.path[0];
+    const root = new Hexagon(startPoint.x + hexagonRadius, startPoint.y + hexagonRadius, hexagonRadius);
     const colorIndex = getRandomInt(0, textures.length);
     const colorGroup = new ColorGroup(colorIndex);
     root.setTexture(colorGroup, textures);
@@ -78,7 +79,7 @@ function fill(rect, textures) {
     objects.push(root);
     refresh();
 
-    root.spawn(objects, rect, textures, maxObjects, params.maxInlineColors, refresh);
+    root.spawn(objects, border, textures, maxObjects, params.maxInlineColors, refresh);
 }
 
 function markSameGroup() {

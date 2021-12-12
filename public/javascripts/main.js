@@ -14,14 +14,26 @@ canvas.height = window.innerHeight;
 
 const maxObjects = 1000;
 
+const scale = 1; // TODO: remove
+
 const params = {
-    scale: 2,
+    scale: scale,
     maxInlineColors: 3,
     border: [
-        new Point(0,0),
-        new Point(800,0),
-        new Point(800,600),
-        new Point(0,600)
+        new Point(100*scale, 0),
+        new Point((100+291)*scale, 0),
+        new Point((100+291)*scale, 371*scale),
+        new Point((100+291-191)*scale, 371*scale),
+        new Point((100+291-191)*scale, (371-62)*scale),
+        new Point((100+291-191-8)*scale, (371-62)*scale),
+        new Point((100+291-191-8)*scale, (371+8)*scale),
+        new Point((100+291-191+10)*scale, (371+8)*scale),
+        new Point((100+291-191+10)*scale, (371+8+281)*scale),
+        new Point((100+291-191+10-140-66)*scale, (371+8+281)*scale),
+        new Point((100+291-191+10-140-66)*scale, (371+8+281-110)*scale),
+        new Point((100+291-191+10-140)*scale, (371+8+281-110)*scale),
+        new Point((100+291-191+10-140)*scale, (371+8+281-521)*scale),
+        new Point(100*scale, (371+8+281-521)*scale),
     ],
 }
 
@@ -72,7 +84,7 @@ async function init() {
 
 function fill(border, textures) {
     const startPoint = border.path[0];
-    const root = new Hexagon(startPoint.x + hexagonRadius, startPoint.y + hexagonRadius, hexagonRadius);
+    const root = new Hexagon(startPoint.x + hexagonRadius/3, startPoint.y + hexagonRadius/3, hexagonRadius);
     const colorIndex = getRandomInt(0, textures.length);
     const colorGroup = new ColorGroup(colorIndex);
     root.setTexture(colorGroup, textures);
@@ -118,5 +130,5 @@ function animate() {
 
 await init()
 refresh();
-markSameGroup();
+//markSameGroup();
 drawBorder();

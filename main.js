@@ -209,20 +209,20 @@
                 hexagon.findAllNeighbours(objects, border);
 
                 let newColor = getRandomInt(0, textures.length-1);
-                const same = hexagon.neighbours.items.filter(item => {
-                    return item.colorGroup.colorIndex == newColor;
-                });
-                const sameOverall = same.reduce((prev, curr, index, result) => result.push(curr.members), []);
-                const violate = sameOverall.length >= maxInlineColors;
+                let violate = true;
+                let i = 1;
+                while(violate && i < textures.length-1) {
+                    violate = this.isColorViolate(hexagon, newColor);
 
-                if (violate) {
-                    newColor = newColor + 1;
-                    if (newColor > textures.length) {
-                        newColor = 0;
+                    if (violate) {
+                        newColor = newColor + 1;
+                        if (newColor > textures.length) {
+                            newColor = 0;
+                        }
+
+                        i++;
                     }
                 }
-
-                // TODO: recursive check new color
 
                 const firstNeighbourWithColor = hexagon.neighbours.items.filter(item => item.colorGroup.colorIndex == newColor)[0];
                 const newColorGroup = !!firstNeighbourWithColor ? firstNeighbourWithColor.colorGroup : null;
@@ -240,6 +240,14 @@
 
                 hexagon.spawn(objects, border, textures);
             });
+        }
+
+        isColorViolate(hexagon, colorIndex) {
+            const same = hexagon.neighbours.items.filter(item => {
+                return item.colorGroup.colorIndex == colorIndex;
+            });
+            const sameOverall = same.reduce((prev, curr, index, result) => result.push(curr.members), []);
+            return sameOverall.length >= maxInlineColors;
         }
     }
 

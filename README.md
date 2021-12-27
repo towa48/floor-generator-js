@@ -6,15 +6,13 @@ Hexagonal tiles generator
 
 install dependencies:
 ```bash
-$ npm install
+$ yarn
 ```
 
 run the app:
 ```bash
-$ DEBUG=hello-world:* npm start
+$ yarn start
 ```
-
-open browser at [http://localhost:3000](http://localhost:3000)
 
 ## License
 

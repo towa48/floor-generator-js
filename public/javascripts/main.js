@@ -39,9 +39,9 @@ const params = {
 
 const hexagonRadius = 10.5*params.scale;
 const patterns =  [
-    new Texture("/images/texture/cotton_pattern.png"),
-    new Texture("/images/texture/shell_pattern.png"),
-    new Texture("/images/texture/sand_pattern.png")
+    new Texture("public/images/texture/cotton_pattern.png"),
+    new Texture("public/images/texture/shell_pattern.png"),
+    new Texture("public/images/texture/sand_pattern.png")
 ];
 
 // Implementation

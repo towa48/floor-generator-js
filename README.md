@@ -6,7 +6,12 @@ Hexagonal tiles generator
 
 install dependencies:
 ```bash
-$ yarn
+$ yarn install
+```
+
+or if you have proxy
+```
+$ npx cross-env ELECTRON_GET_USE_PROXY=true GLOBAL_AGENT_HTTPS_PROXY=$HTTP_PROXY yarn install
 ```
 
 run the app:

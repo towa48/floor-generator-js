@@ -1,8 +1,52 @@
 body {
-  padding: 50px;
+  padding: 0;
+  margin: 0;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 a {
   color: #00B7FF;
+}
+
+container,
+sidenav,
+content {
+  display: block;
+}
+
+container {
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+sidenav {
+  position:absolute;
+  left:0;
+  top: 0;
+  width: 250px;
+  bottom: 0;
+}
+
+sidenav {
+  padding-left: 10px;
+}
+
+.sidenav-light {
+  background-color: #e3f2fd;
+}
+
+content {
+  padding-left: 270px;
+  height: 100%;
+  overflow: scroll;
+}
+
+.border-input {
+  width: 80%;
+  height: 300px;
+}
+
+.form-wrapper {
+  text-align: center;
 }

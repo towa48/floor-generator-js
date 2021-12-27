@@ -3,7 +3,8 @@
   "version": "1.1.0",
   "private": true,
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "prepare": "npx cross-env ELECTRON_GET_USE_PROXY=true GLOBAL_AGENT_HTTPS_PROXY=$HTTP_PROXY yarn install"
   },
   "main": "main.js",
   "dependencies": {

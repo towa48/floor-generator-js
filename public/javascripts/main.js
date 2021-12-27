@@ -9,9 +9,6 @@ import { Border } from './types/border.js';
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
 const maxObjects = 1000;
 
 const scale = 1; // TODO: remove
@@ -37,12 +34,23 @@ borderEl.value = borderVal;
 const params = {
     scale: scale,
     maxInlineColors: 3,
-    border: parseBorder(borderVal),
+    border: null,
+}
+
+updateBorder();
+
+function updateCanvasSize() {
+    const maxWidthPoint = params.border.reduce((prev, curr) => (prev.x > curr.x) ? prev : curr);
+    const maxHeightPoint = params.border.reduce((prev, curr) => (prev.y > curr.y) ? prev : curr);
+
+    canvas.width = maxWidthPoint.x + 50;
+    canvas.height = maxHeightPoint.y + 50;
 }
 
 function updateBorder() {
     const borderVal = borderEl.value;
     params.border = parseBorder(borderVal);
+    updateCanvasSize();
 }
 
 const hexagonRadius = 10.5*params.scale;
@@ -62,6 +70,7 @@ buttonEl.addEventListener('click', async (e) => {
     objects = [];
     updateBorder();
     await init();
+    drawBorder();
 })
 
 function find(x, y) {
@@ -92,11 +101,13 @@ async function init() {
         });
 
         refresh();
+        updateStats();
         drawBorder();
     });
 
     border = new Border(c, params.border);
     fill(border, loadedTextures);
+    updateStats();
 }
 
 function fill(border, textures) {
@@ -136,7 +147,35 @@ function refresh() {
 
     objects.forEach(item => {
         item.update(c);
-    })
+    });
+}
+
+function updateStats() {
+    const tile1El = document.querySelector('#count1');
+    const tile2El = document.querySelector('#count2');
+    const tile3El = document.querySelector('#count3');
+
+    let i1 = 0;
+    let i2 = 0;
+    let i3 = 0;
+
+    objects.forEach(item => {
+        switch(item.colorGroup.colorIndex) {
+            case 0:
+                i1++;
+                break
+            case 1:
+                i2++;
+                break;
+            case 2:
+                i3++;
+                break;
+        }
+    });
+
+    tile1El.textContent = i1;
+    tile2El.textContent = i2;
+    tile3El.textContent = i3;
 }
 
 // Animation Loop
@@ -147,5 +186,6 @@ function animate() {
 
 await init()
 refresh();
+updateStats();
 //markSameGroup();
 drawBorder();

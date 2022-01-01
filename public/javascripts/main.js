@@ -4,10 +4,8 @@ import { Hexagon } from './types/hexagon.js';
 import { getRandomInt } from './utils/random.js';
 import { colors } from './const.js';
 import { Border } from './types/border.js';
-import { load } from './utils/js-yaml.js';
+import { load as yamltojson, dump as jsontoyaml } from './utils/js-yaml.js';
 import { Params } from './types/params.js';
-
-const yamltojson = load;
 
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
@@ -75,6 +73,11 @@ async function init() {
 
     const loadedTextures = [tex1, tex2, tex3];
 
+    let borders = [];
+    Object.keys(params.rooms).forEach(room => {
+        borders.push(new Border(c, params.rooms[room]));
+    });
+
     canvas.addEventListener('mousedown', (e) => {
         const position = getCursorPosition(e);
         const items = find(position.x, position.y);
@@ -86,16 +89,24 @@ async function init() {
 
         refresh();
         updateStats();
-        drawBorder();
+        drawBorders(borders);
     });
 
-    const first = Object.keys(params.rooms)[0];
-    border = new Border(c, params.rooms[first]);
-    fill(border, loadedTextures);
+    fill(borders, loadedTextures);
+    refresh();
     updateStats();
+    drawBorders(borders);
+
+    //markSameGroup();
 }
 
-function fill(border, textures) {
+function fill(borders, textures) {
+    borders.forEach(border => {
+        fillOne(border, textures);
+    })
+}
+
+function fillOne(border, textures) {
     const startPoint = border.path[0];
     const root = new Hexagon(startPoint.x + hexagonRadius/3, startPoint.y + hexagonRadius/3, hexagonRadius);
     const colorIndex = getRandomInt(0, textures.length);
@@ -123,8 +134,10 @@ function markSameGroup() {
     });
 }
 
-function drawBorder() {
-    border.draw();
+function drawBorders(borders) {
+    borders.forEach(border => {
+        border.draw();
+    });
 }
 
 function refresh() {
@@ -136,31 +149,34 @@ function refresh() {
 }
 
 function updateStats() {
-    const tile1El = document.querySelector('#count1');
-    const tile2El = document.querySelector('#count2');
-    const tile3El = document.querySelector('#count3');
+    const rootEl = document.querySelector('#stats');
 
-    let i1 = 0;
-    let i2 = 0;
-    let i3 = 0;
+    const stats = {};
+    const names = Object.keys(params.settings.patterns);
 
     objects.forEach(item => {
-        switch(item.colorGroup.colorIndex) {
-            case 0:
-                i1++;
-                break
-            case 1:
-                i2++;
-                break;
-            case 2:
-                i3++;
-                break;
+        const name = names[item.colorGroup.colorIndex] || 'unknown';
+        if (!stats[name]) {
+            stats[name] = {
+                count: 0,
+                boxes: 0
+            }
         }
+
+        stats[name].count++;
     });
 
-    tile1El.textContent = `${i1} (${Math.ceil(i1/params.settings.settings.perBoxCount)} boxes)`;
-    tile2El.textContent = `${i2} (${Math.ceil(i2/params.settings.settings.perBoxCount)} boxes)`;
-    tile3El.textContent = `${i3} (${Math.ceil(i3/params.settings.settings.perBoxCount)} boxes)`;
+    // clear stats html
+    rootEl.innerHTML = '';
+
+    const boxCount = params.settings.settings.perBoxCount;
+    Object.keys(stats).forEach(key => {
+        stats[key].boxes = Math.ceil(stats[key].count/boxCount);
+
+        const el = document.createElement('p');
+        el.innerHTML = `${key}: ${stats[key].count} (${stats[key].boxes} boxes)`;
+        rootEl.appendChild(el);
+    });
 }
 
 // Animation Loop
@@ -171,8 +187,4 @@ function animate() {
 
 await loadExample();
 updateCanvasSize();
-await init()
-refresh();
-updateStats();
-//markSameGroup();
-drawBorder();
+await init();

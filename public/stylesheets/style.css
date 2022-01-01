@@ -43,7 +43,7 @@ sidenav {
 }
 
 content {
-  padding-left: 270px;
+  padding-left: 280px;
   height: 100%;
   overflow: scroll;
 }
@@ -60,4 +60,8 @@ content {
 .block {
   padding: 5px;
   /*border: 1px solid grey;*/
+}
+
+.statistics p {
+  margin-top: 0;
 }

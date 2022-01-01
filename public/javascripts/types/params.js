@@ -56,9 +56,13 @@ export class Params {
   }
 
   getSize() {
-    const first = Object.keys(this.rooms)[0];
-    const maxWidthPoint = this.rooms[first].reduce((prev, curr) => (prev.x > curr.x) ? prev : curr);
-    const maxHeightPoint = this.rooms[first].reduce((prev, curr) => (prev.y > curr.y) ? prev : curr);
+    let points = [];
+    Object.keys(this.rooms).forEach(key => {
+      points = points.concat(this.rooms[key]);
+    });
+
+    const maxWidthPoint = points.reduce((prev, curr) => (prev.x > curr.x) ? prev : curr);
+    const maxHeightPoint = points.reduce((prev, curr) => (prev.y > curr.y) ? prev : curr);
 
     return { width: maxWidthPoint.x + 50, height: maxHeightPoint.y + 50 };
   }

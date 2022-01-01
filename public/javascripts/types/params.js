@@ -1,10 +1,12 @@
 import { Point } from './point.js';
 import { Texture } from './texture.js';
+import { mergeDeep } from '../utils/assign.js';
 
 const defaultSettings = {
     settings: {
         scale: 1,
         maxInlineColors: 3,
+        perBoxCount: 16,
     },
     patterns: {
         cotton: 'public/images/texture/cotton_pattern.png',
@@ -23,7 +25,7 @@ const defaultSettings = {
 
 export class Params {
   constructor() {
-    this.settings = Object.assign({}, defaultSettings);
+    this.settings = mergeDeep({}, defaultSettings);
     this.rooms = {};
     this.textures = {};
 
@@ -31,7 +33,7 @@ export class Params {
   }
 
   apply(settings) {
-    this.settings = Object.assign(this.settings, settings || {});
+    this.settings = mergeDeep(this.settings, settings || {});
     this.clear();
     this.parseRooms();
     this.parseTextures();

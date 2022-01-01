@@ -158,9 +158,9 @@ function updateStats() {
         }
     });
 
-    tile1El.textContent = i1;
-    tile2El.textContent = i2;
-    tile3El.textContent = i3;
+    tile1El.textContent = `${i1} (${Math.ceil(i1/params.settings.settings.perBoxCount)} boxes)`;
+    tile2El.textContent = `${i2} (${Math.ceil(i2/params.settings.settings.perBoxCount)} boxes)`;
+    tile3El.textContent = `${i3} (${Math.ceil(i3/params.settings.settings.perBoxCount)} boxes)`;
 }
 
 // Animation Loop

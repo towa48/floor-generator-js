@@ -14,3 +14,7 @@ rooms:
     - [114,550]
     - [114,139]
     - [144,139]
+
+settings:
+  maxInlineColors: 3
+  perBoxCount: 16

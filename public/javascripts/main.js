@@ -1,64 +1,37 @@
 import { Point } from './types/point.js';
-import { Texture } from './types/texture.js';
 import { ColorGroup } from './types/color-group.js';
 import { Hexagon } from './types/hexagon.js';
-import { getRandomInt, parseBorder } from './utils.js';
+import { getRandomInt } from './utils/random.js';
 import { colors } from './const.js';
 import { Border } from './types/border.js';
+import { load } from './utils/js-yaml.js';
+import { Params } from './types/params.js';
+
+const yamltojson = load;
 
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
-const maxObjects = 1000;
+const maxObjectsThreshold = 1000;
+const settingsEl = document.querySelector('#settings');
 
-const scale = 1; // TODO: remove
-
-let borderVal = `(144,0);
-(435,0);
-(435,371);
-(244,371);
-(244,309);
-(236,309);
-(236,379);
-(254,379);
-(254,660);
-(4,660);
-(4,550);
-(114,550);
-(114,139);
-(144,139);`;
-
-const borderEl = document.querySelector('#border');
-borderEl.value = borderVal;
-
-const params = {
-    scale: scale,
-    maxInlineColors: 3,
-    border: null,
-}
-
-updateBorder();
+const params = new Params();
 
 function updateCanvasSize() {
-    const maxWidthPoint = params.border.reduce((prev, curr) => (prev.x > curr.x) ? prev : curr);
-    const maxHeightPoint = params.border.reduce((prev, curr) => (prev.y > curr.y) ? prev : curr);
+    const size = params.getSize();
 
-    canvas.width = maxWidthPoint.x + 50;
-    canvas.height = maxHeightPoint.y + 50;
+    canvas.width = size.width;
+    canvas.height = size.height;
 }
 
-function updateBorder() {
-    const borderVal = borderEl.value;
-    params.border = parseBorder(borderVal);
+function updateSettings() {
+    const settingsVal = settingsEl.value;
+    params.apply(yamltojson(settingsVal));
+
     updateCanvasSize();
 }
 
-const hexagonRadius = 10.5*params.scale;
-const patterns =  [
-    new Texture("public/images/texture/cotton_pattern.png"),
-    new Texture("public/images/texture/shell_pattern.png"),
-    new Texture("public/images/texture/sand_pattern.png")
-];
+const hexagonRadius = 10.5*params.settings.settings.scale;
 
 // Implementation
 let objects = [];
@@ -68,7 +41,7 @@ const buttonEl = document.querySelector('#refresh');
 buttonEl.addEventListener('click', async (e) => {
     c.clearRect(0, 0, canvas.width, canvas.height);
     objects = [];
-    updateBorder();
+    updateSettings();
     await init();
     drawBorder();
 })
@@ -84,10 +57,21 @@ function getCursorPosition(event) {
     return new Point(x, y);
 }
 
+async function loadExample() {
+    return new Promise((resolve, reject) => {
+        window.api.send('load-example');
+        window.api.receive('example-loaded', (data) => {
+            settingsEl.value = data;
+            params.apply(yamltojson(data));
+            resolve();
+        })
+    });
+}
+
 async function init() {
-    const tex1 = await patterns[0].load(c);
-    const tex2 = await patterns[1].load(c);
-    const tex3 = await patterns[2].load(c);
+    const tex1 = await params.textures.cotton.load(c);
+    const tex2 = await params.textures.shell.load(c);
+    const tex3 = await params.textures.send.load(c);
 
     const loadedTextures = [tex1, tex2, tex3];
 
@@ -105,7 +89,8 @@ async function init() {
         drawBorder();
     });
 
-    border = new Border(c, params.border);
+    const first = Object.keys(params.rooms)[0];
+    border = new Border(c, params.rooms[first]);
     fill(border, loadedTextures);
     updateStats();
 }
@@ -120,7 +105,7 @@ function fill(border, textures) {
     objects.push(root);
     refresh();
 
-    root.spawn(objects, border, textures, maxObjects, params.maxInlineColors, refresh);
+    root.spawn(objects, border, textures, maxObjectsThreshold, params.settings.settings.maxInlineColors, refresh);
 }
 
 function markSameGroup() {
@@ -184,6 +169,8 @@ function animate() {
     refresh();
 }
 
+await loadExample();
+updateCanvasSize();
 await init()
 refresh();
 updateStats();

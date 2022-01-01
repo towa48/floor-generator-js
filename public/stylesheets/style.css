@@ -35,6 +35,7 @@ sidenav {
 
 sidenav {
   padding-left: 10px;
+  padding-right: 10px;
 }
 
 .sidenav-light {
@@ -49,9 +50,14 @@ content {
 
 .border-input {
   width: 80%;
-  height: 300px;
+  height: 250px;
 }
 
 .form-wrapper {
   text-align: center;
+}
+
+.block {
+  padding: 5px;
+  /*border: 1px solid grey;*/
 }

@@ -1,7 +1,7 @@
 import { HexagonNeighbours } from './hexagon-neighbours.js';
 import { Point } from './point.js';
 import { ColorGroup } from './color-group.js';
-import { getRandomInt } from '../utils.js';
+import { getRandomInt } from '../utils/random.js';
 import { colors } from '../const.js';
 
 export class Hexagon {

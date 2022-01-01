@@ -82,8 +82,8 @@ export class Hexagon {
         });
     }
 
-    spawn(objects, border, textures, maxObjects, maxInlineColors, refresh) {
-        if (objects.length >= maxObjects) {
+    spawn(storage, border, textures, maxObjects, maxInlineColors, refresh) {
+        if (storage.objects.length >= maxObjects) {
             console.log('Stack exceeded');
             return;
         }
@@ -101,7 +101,7 @@ export class Hexagon {
             }
 
             // check any existing item at that position
-            const exists = objects.filter(item => item.contains(position));
+            const exists = storage.objects.filter(item => item.contains(position));
             const found = exists.length > 0 ? exists[0] : null;
             if (found) {
                 // TODO: any color check?
@@ -115,7 +115,7 @@ export class Hexagon {
             hexagon.neighbours[oppositeKey] = this;
 
             // find all neighbours before color
-            hexagon.findAllNeighbours(objects, border);
+            hexagon.findAllNeighbours(storage.objects, border);
 
             let newColor = getRandomInt(0, textures.length-1);
             let violate = true;
@@ -148,10 +148,10 @@ export class Hexagon {
                 });
             }
 
-            objects.push(hexagon);
+            storage.push(hexagon, border);
             refresh();
 
-            hexagon.spawn(objects, border, textures, maxObjects, maxInlineColors, refresh);
+            hexagon.spawn(storage, border, textures, maxObjects, maxInlineColors, refresh);
         });
     }
 
@@ -163,5 +163,13 @@ export class Hexagon {
             return prev.concat(curr.colorGroup.members);
         }, []);
         return sameOverall.length >= maxInlineColors;
+    }
+
+    toSave() {
+        return {
+            x: this.x,
+            y: this.y,
+            colorIndex: this.colorGroup.colorIndex
+        };
     }
 }

@@ -6,6 +6,7 @@ import { colors } from './const.js';
 import { Border } from './types/border.js';
 import { load as yamltojson, dump as jsontoyaml } from './utils/js-yaml.js';
 import { Params } from './types/params.js';
+import { Storage } from './types/storage.js';
 
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
@@ -29,23 +30,45 @@ function updateSettings() {
     updateCanvasSize();
 }
 
-const hexagonRadius = 10.5*params.settings.settings.scale;
+const hexagonRadius = params.settings.settings.tileRadius*params.settings.settings.scale;
 
 // Implementation
-let objects = [];
-let border = null;
+const storage = new Storage(params);
 
 const buttonEl = document.querySelector('#refresh');
 buttonEl.addEventListener('click', async (e) => {
     c.clearRect(0, 0, canvas.width, canvas.height);
-    objects = [];
+    storage.clear();
     updateSettings();
     await init();
-    drawBorder();
+
+    const borders = params.getBorders(c);
+    drawBorders(borders);
 })
 
+const loadEl = document.querySelector('#load');
+loadEl.addEventListener('click', async (e) => {
+    window.api.send('open');
+});
+window.api.receive('save-loaded', async (data) => {
+    settingsEl.value = data;
+    params.apply(yamltojson(data));
+
+    const loadedTextures = await params.loadTextures(c);
+    const borders = params.getBorders(c);
+    storage.load(c, loadedTextures);
+    refresh();
+    updateStats();
+    drawBorders(borders);
+});
+
+const exportEl = document.querySelector('#export');
+exportEl.addEventListener('click', async (e) => {
+    window.api.send('save', jsontoyaml(params.settings));
+});
+
 function find(x, y) {
-    return objects.filter(item => item.contains(x, y));
+    return storage.find(x, y);
 }
 
 function getCursorPosition(event) {
@@ -69,10 +92,7 @@ async function loadExample() {
 async function init() {
     const loadedTextures = await params.loadTextures(c);
 
-    let borders = [];
-    Object.keys(params.rooms).forEach(room => {
-        borders.push(new Border(c, params.rooms[room]));
-    });
+    const borders = params.getBorders(c);
 
     canvas.addEventListener('mousedown', (e) => {
         const position = getCursorPosition(e);
@@ -109,14 +129,16 @@ function fillOne(border, textures) {
     const colorGroup = new ColorGroup(colorIndex);
     root.setTexture(colorGroup, textures);
 
-    objects.push(root);
+    storage.push(root, border);
+
+    params.settings.generated[border.name].push(root.toSave());
     refresh();
 
-    root.spawn(objects, border, textures, maxObjectsThreshold, params.settings.settings.maxInlineColors, refresh);
+    root.spawn(storage, border, textures, maxObjectsThreshold, params.settings.settings.maxInlineColors, refresh);
 }
 
 function markSameGroup() {
-    objects.forEach(current => {
+    storage.objects.forEach(current => {
         const sameGroup = current.neighbours.items.filter(item => {
             return item.colorGroup === current.colorGroup;
         });
@@ -139,7 +161,7 @@ function drawBorders(borders) {
 function refresh() {
     c.clearRect(0, 0, canvas.width, canvas.height)
 
-    objects.forEach(item => {
+    storage.objects.forEach(item => {
         item.update(c);
     });
 }
@@ -150,7 +172,7 @@ function updateStats() {
     const stats = {};
     const names = Object.keys(params.settings.patterns);
 
-    objects.forEach(item => {
+    storage.objects.forEach(item => {
         const name = names[item.colorGroup.colorIndex] || 'unknown';
         if (!stats[name]) {
             stats[name] = {
@@ -176,10 +198,10 @@ function updateStats() {
 }
 
 // Animation Loop
-function animate() {
-    //requestAnimationFrame(animate)
-    refresh();
-}
+//function animate() {
+//    requestAnimationFrame(animate)
+//    refresh();
+//}
 
 await loadExample();
 updateCanvasSize();

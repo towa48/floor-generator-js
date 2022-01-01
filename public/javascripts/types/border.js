@@ -1,11 +1,12 @@
 import { colors } from '../const.js';
 
 export class Border {
-    constructor(ctx, path) {
+    constructor(ctx, name, path) {
         if (!path || path.length < 2) {
             throw new Error('Path should contains at least 2 points.');
         }
 
+        this.name = name;
         this.path = path;
 
         this._ctx = ctx;

@@ -1,12 +1,14 @@
 import { Point } from './point.js';
 import { Texture } from './texture.js';
 import { mergeDeep } from '../utils/assign.js';
+import { Border } from './border.js';
 
 const defaultSettings = {
     settings: {
         scale: 1,
         maxInlineColors: 3,
         perBoxCount: 16,
+        tileRadius: 10.5
     },
     patterns: {
         cotton: 'public/images/texture/cotton_pattern.png',
@@ -19,6 +21,8 @@ const defaultSettings = {
             [30, 210],
         ]
     },
+    generated: {
+    }
 }
 
 export class Params {
@@ -33,6 +37,7 @@ export class Params {
   apply(settings) {
     if (settings) {
       this.settings.patterns = {};
+      this.settings.generated = {};
       this.settings = mergeDeep(this.settings, settings || {});
     }
     this.clear();
@@ -66,6 +71,12 @@ export class Params {
     const maxHeightPoint = points.reduce((prev, curr) => (prev.y > curr.y) ? prev : curr);
 
     return { width: maxWidthPoint.x + 50, height: maxHeightPoint.y + 50 };
+  }
+
+  getBorders(ctx) {
+    return Object.keys(this.rooms).map(key => {
+      return new Border(ctx, key, this.rooms[key]);
+    });
   }
 
   loadTextures(ctx) {

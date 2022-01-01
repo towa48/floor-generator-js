@@ -67,11 +67,7 @@ async function loadExample() {
 }
 
 async function init() {
-    const tex1 = await params.textures.cotton.load(c);
-    const tex2 = await params.textures.shell.load(c);
-    const tex3 = await params.textures.send.load(c);
-
-    const loadedTextures = [tex1, tex2, tex3];
+    const loadedTextures = await params.loadTextures(c);
 
     let borders = [];
     Object.keys(params.rooms).forEach(room => {

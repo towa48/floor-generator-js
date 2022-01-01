@@ -29,3 +29,8 @@ rooms:
 settings:
   maxInlineColors: 3
   perBoxCount: 16
+
+patterns:
+  cotton: 'public/images/texture/cotton_pattern.png'
+  shell: 'public/images/texture/shell_pattern.png'
+  send: 'public/images/texture/sand_pattern.png'

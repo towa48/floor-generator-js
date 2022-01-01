@@ -10,8 +10,6 @@ const defaultSettings = {
     },
     patterns: {
         cotton: 'public/images/texture/cotton_pattern.png',
-        shell: 'public/images/texture/shell_pattern.png',
-        send: 'public/images/texture/sand_pattern.png',
     },
     rooms: {
         living: [
@@ -33,7 +31,10 @@ export class Params {
   }
 
   apply(settings) {
-    this.settings = mergeDeep(this.settings, settings || {});
+    if (settings) {
+      this.settings.patterns = {};
+      this.settings = mergeDeep(this.settings, settings || {});
+    }
     this.clear();
     this.parseRooms();
     this.parseTextures();
@@ -65,6 +66,11 @@ export class Params {
     const maxHeightPoint = points.reduce((prev, curr) => (prev.y > curr.y) ? prev : curr);
 
     return { width: maxWidthPoint.x + 50, height: maxHeightPoint.y + 50 };
+  }
+
+  loadTextures(ctx) {
+    const tasks = Object.keys(this.textures).map(key => this.textures[key].load(ctx));
+    return Promise.all(tasks);
   }
 
   clear() {

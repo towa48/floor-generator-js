@@ -4,26 +4,35 @@ import { Hexagon } from './hexagon.js';
 export class Storage {
     constructor(params) {
         this.objects = [];
+        this.objectsByRoom = {};
         this.params = params;
     }
 
     clear() {
         this.objects = [];
+        this.objectsByRoom = {};
         this.params.settings.generated = {};
     }
 
     push(item, border) {
+        const room = border.name;
+
         this.objects.push(item);
+        if (!this.objectsByRoom[room]) {
+            this.objectsByRoom[room] = [];
+        }
+        this.objectsByRoom[room].push(item)
 
         const generated = this.params.settings.generated;
-        if (!generated[border.name]) {
-            generated[border.name] = [];
+        if (!generated[room]) {
+            generated[room] = [];
         }
-        generated[border.name].push(item.toSave());
+        generated[room].push(item.toSave());
     }
 
     load(ctx, textures) {
         this.objects = [];
+        this.objectsByRoom = {};
         const generated = this.params.settings.generated;
         const borders = this.params.getBorders(ctx);
         Object.keys(generated).forEach(key => {
@@ -33,12 +42,28 @@ export class Storage {
                 const item = new Hexagon(saved.x, saved.y, this.params.settings.settings.tileRadius);
                 item.setTexture(new ColorGroup(saved.colorIndex), textures);
                 item.findAllNeighbours(this.objects, border)
-                this.objects.push(item);
+                this.push(item, border);
             });
         });
     }
 
-    find(x, y) {
-        return this.objects.filter(item => item.contains(x, y));
+    find(point) {
+        return Object.keys(this.objectsByRoom).map(room => {
+            const items = this.objectsByRoom[room].filter(item => item.contains(point));
+            return {
+                items,
+                room
+            };
+        });
+    }
+
+    updateRoom(name) {
+        const generated = this.params.settings.generated;
+        generated[name] = [];
+        const items = this.objectsByRoom[name];
+
+        items.forEach(item => {
+            generated[name].push(item.toSave());
+        })
     }
 }

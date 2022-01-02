@@ -3,7 +3,6 @@ import { ColorGroup } from './types/color-group.js';
 import { Hexagon } from './types/hexagon.js';
 import { getRandomInt } from './utils/random.js';
 import { colors } from './const.js';
-import { Border } from './types/border.js';
 import { load as yamltojson, dump as jsontoyaml } from './utils/js-yaml.js';
 import { Params } from './types/params.js';
 import { Storage } from './types/storage.js';
@@ -68,7 +67,7 @@ exportEl.addEventListener('click', async (e) => {
 });
 
 function find(x, y) {
-    return storage.find(x, y);
+    return storage.find(new Point(x, y));
 }
 
 function getCursorPosition(event) {
@@ -96,11 +95,21 @@ async function init() {
 
     canvas.addEventListener('mousedown', (e) => {
         const position = getCursorPosition(e);
-        const items = find(position.x, position.y);
-        items.forEach(item => {
-            const nextColor = item.colorIndex + 1;
-            const newColor = nextColor >= loadedTextures.length ? 0 : nextColor;
-            item.setTexture(newColor, loadedTextures[newColor]);
+        const results = find(position.x, position.y);
+        results.forEach(result => {
+            const room = result.room;
+            const items = result.items;
+
+            if (items.length === 0)
+                return;
+
+            items.forEach(item => {
+                const nextColor = item.colorGroup.colorIndex + 1;
+                const newColor = nextColor >= loadedTextures.length ? 0 : nextColor;
+                item.setTexture(new ColorGroup(newColor), loadedTextures);
+            });
+
+            storage.updateRoom(room);
         });
 
         refresh();
